@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS Venue;
 DROP TABLE IF EXISTS Concert;
 DROP TABLE IF EXISTS Comment;
 DROP TABLE IF EXISTS Performance;
+DROP TABLE IF EXISTS Performance_piece;
 DROP TABLE IF EXISTS Performance_post;
 
 CREATE TABLE Piece(
@@ -53,7 +54,7 @@ CREATE TABLE Performance(
 	FOREIGN KEY (venue_id) REFERENCES Venue(venue_id) ON DELETE SET NULL
 );
 
-CREATE TABLE Perform_piece(
+CREATE TABLE Performance_piece(
 	concert_id  INT,
 	piece_id	INT,
 	PRIMARY KEY (concert_id,piece_id),
