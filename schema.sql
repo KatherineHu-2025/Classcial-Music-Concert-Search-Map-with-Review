@@ -53,6 +53,14 @@ CREATE TABLE Performance(
 	FOREIGN KEY (venue_id) REFERENCES Venue(venue_id) ON DELETE SET NULL
 );
 
+CREATE TABLE Perform_piece(
+	concert_id  INT,
+	piece_id	INT,
+	PRIMARY KEY (concert_id,piece_id),
+	FOREIGN KEY (concert_id) REFERENCES Concert(concert_id) ON DELETE CASCADE,
+	FOREIGN KEY (piece_id) REFERENCES Piece(piece_id) ON DELETE CASCADE
+);
+
 CREATE TABLE Performance_post(
 	perform_id	INT,
 	comment_id	INT,
