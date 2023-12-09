@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Search</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: hsl(0, 0%, 96%);
+            padding: 20px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        form {
+            width: 80%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #666;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #5c85d6;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }
+    
+        thead {
+            background-color: #f2f2f2; 
+        }
+    
+        th {
+            padding: 10px; 
+            text-align: left;
+            border-bottom: 1px solid #ddd; 
+        }
+    
+        td {
+            padding: 8px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Classical Music Database Search</h1>
+
+    <form id="musicSearchForm" onsubmit = "search(event)">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" name="startDate"><br><br>
+
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" name="endDate"><br><br>
+
+        <label for="composer">Composer:</label>
+        <input type="text" id="composer" name="composer">
+
+        <label for="piece">Piece:</label>
+        <input type="text" id="piece" name="piece">
+
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location">
+
+        <label for="performer">Performer:</label>
+        <input type="text" id="performer" name="performer">
+
+
+        <input type="submit" value="Search">
+    </form>
+
+    <div id="searchInfo"></div>
+
+    <script>
+        async function search(event){
+            event.preventDefault();
+
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const composer = document.getElementById('composer').value;
+            const piece = document.getElementById('piece').value;
+            const location = document.getElementById('location').value;
+            const performer = document.getElementById('performer').value;
+
+            const params = new URLSearchParams({startDate, endDate, composer, piece, location, performer});
+
+            try{
+                const response = await fetch(`http://localhost:3000/search?${params.toString()}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                const searchInfoDiv = document.getElementById('searchInfo');
+                searchInfoDiv.innerHTML = '';
+
+                if (data.length > 0) {
+                    const table = document.createElement('table');
+                    const thead = document.createElement('thead');
+                    const tbody = document.createElement('tbody');
+                    
+                    const headerRow = document.createElement('tr');
+                    for (const key in data[0]) {
+                        const th = document.createElement('th');
+                        th.textContent = key;
+                        headerRow.appendChild(th);
+                    }
+                    thead.appendChild(headerRow);
+                    
+                    data.forEach(concert => {
+                        const dataRow = document.createElement('tr');
+                        for (const key in concert) {
+                            const td = document.createElement('td');
+                            td.textContent = concert[key];
+                            dataRow.appendChild(td);
+                        }
+                        tbody.appendChild(dataRow);
+                    });
+
+                    table.appendChild(thead);
+                    table.appendChild(tbody);
+                    searchInfoDiv.appendChild(table);
+                } 
+                else {
+                    searchInfoDiv.textContent = 'No performance is found.';
+                }
+            }
+            catch (error){
+                console.error('Fetch error:', error);
+                const searchInfoDiv = document.getElementById('searchInfo');
+                searchInfoDiv.textContent = 'Failed to load concert info. Please try again later.';
+            }
+        }
+    </script>
+</body>
+
+</html>
