@@ -20,7 +20,7 @@
         }
 
         form {
-            width: 80%;
+            width: relative;
             max-width: 600px;
             margin: 0 auto;
             background: #fff;
@@ -37,12 +37,13 @@
 
         input[type="text"],
         input[type="date"] {
-            width: 100%;
+            box-sizing: border-box; 
+            width: 100%; 
             padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
+            margin-top: 5px; 
+            border: 1px solid #ddd; 
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 16px; 
         }
 
         input[type="submit"] {
@@ -62,7 +63,8 @@
             border-collapse: collapse; 
             margin-top: 20px; 
         }
-    
+        
+        
         thead {
             background-color: #f2f2f2; 
         }
@@ -78,6 +80,24 @@
             text-align: left; 
             border-bottom: 1px solid #ddd; 
         }
+
+        .searchList {
+            position: absolute;      
+            width: 600px;                    
+            max-height: 200px;       
+            overflow-y: auto;        
+            background-color: white; 
+            font-size: 16px;           
+        }
+
+        .searchList div {
+            border: 1px solid #ddd;  /* Light grey border */
+            padding: 8px;            /* Padding for each item */
+            cursor: pointer;         /* Pointer cursor on hover */
+            transition: background-color 0.3s; /* Smooth transition for hover effect */
+            z-index: 1200;
+        }
+        
     </style>
 
 </head>
@@ -93,16 +113,20 @@
         <input type="date" id="endDate" name="endDate"><br><br>
 
         <label for="composer">Composer:</label>
-        <input type="text" id="composer" name="composer">
+        <input type="text" id="composer" name="composer" onkeyup="searchComposer()">
+        <div id="composerList" class="searchList"></div>
 
         <label for="piece">Piece:</label>
-        <input type="text" id="piece" name="piece">
+        <input type="text" id="piece" name="piece" onkeyup="searchPiece()">
+        <div id="pieceList" class="searchList"></div>
 
         <label for="location">Location:</label>
-        <input type="text" id="location" name="location">
+        <input type="text" id="location" name="location" oninput="searchVenue()">
+        <div id="locationList" class="searchList"></div>
 
         <label for="performer">Performer:</label>
-        <input type="text" id="performer" name="performer">
+        <input type="text" id="performer" name="performer" oninput="searchPerformer()">
+        <div id="performerList" class="searchList"></div>
 
 
         <input type="submit" value="Search">
@@ -111,6 +135,180 @@
     <div id="searchInfo"></div>
 
     <script>
+        //This section of code fetch the whole distinct composer list from the database and store them into a list.
+        let composerList = [];
+        fetch('http://localhost:3000/composerdata')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(composers => {
+                composers.forEach(item => {
+                    composerList.push(item.composer); 
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+        
+        //This section of code fetch the whole distinct piece list from the database and store them into a list.
+        let pieceList = [];
+        fetch('http://localhost:3000/piecedata')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(pieces => {
+                pieces.forEach(item => {
+                    pieceList.push(item.title);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+        
+        //This section of code fetch the whole distinct venue list from the database and store them into a list.
+        let venueList = [];
+        fetch('http://localhost:3000/venuedata')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(venues => {
+                venues.forEach(item => {
+                    venueList.push(item.name);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+        
+        //This section of code fetch the whole distinct org list from the database and store them into a list.
+        let orgList = [];
+        fetch('http://localhost:3000/orgdata')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(orgs => {
+                orgs.forEach(item => {
+                    orgList.push(item.org);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+        
+        //This function filters the composers depending on user's input and fill the box by clicking
+        function searchComposer() {
+            let input = document.getElementById('composer').value;
+        
+            if (input.trim() === '') {
+                document.getElementById('composerList').innerHTML = '';
+                return; // Clear the output list
+            }
+        
+            input = input.toLowerCase();
+            let filteredComposers = composerList.filter(composer => composer.toLowerCase().includes(input));
+        
+            let composerListDiv = document.getElementById('composerList');
+            composerListDiv.innerHTML = ''; // Clear previous results
+        
+            filteredComposers.forEach(composer => {
+                let div = document.createElement('div');
+                div.textContent = composer;
+                div.addEventListener('click', function() {
+                    document.getElementById('composer').value = composer; // Set the input value
+                    document.getElementById('composerList').innerHTML = ''; // Clear the list after selection
+                });
+                composerListDiv.appendChild(div);
+            });
+        }
+        
+        function searchPiece() {
+            let input = document.getElementById('piece').value;
+        
+            if (input.trim() === '') {
+                document.getElementById('pieceList').innerHTML = '';
+                return; // Clear the output list
+            }
+        
+            input = input.toLowerCase();
+            let filteredPieces = pieceList.filter(piece => piece.toLowerCase().includes(input));
+        
+            let pieceListDiv = document.getElementById('pieceList');
+            pieceListDiv.innerHTML = ''; // Clear previous results
+        
+            filteredPieces.forEach(piece => {
+                let div = document.createElement('div');
+                div.textContent = piece;
+                div.addEventListener('click', function() {
+                    document.getElementById('piece').value = piece; // Set the input value
+                    document.getElementById('pieceList').innerHTML = ''; // Clear the list after selection
+                });
+                pieceListDiv.appendChild(div);
+            });
+        }
+
+        function searchVenue() {
+            let input = document.getElementById('location').value;
+        
+            if (input.trim() === '') {
+                document.getElementById('locationList').innerHTML = '';
+                return; // Clear the output list
+            }
+        
+            input = input.toLowerCase();
+            let filteredVenues = venueList.filter(venue => venue.toLowerCase().includes(input));
+        
+            let venueListDiv = document.getElementById('locationList');
+            venueListDiv.innerHTML = ''; // Clear previous results
+        
+            filteredVenues.forEach(venue => {
+                let div = document.createElement('div');
+                div.textContent = venue;
+                div.addEventListener('click', function() {
+                    document.getElementById('location').value = venue; // Set the input value
+                    document.getElementById('locationList').innerHTML = ''; // Clear the list after selection
+                });
+                venueListDiv.appendChild(div);
+            });
+        }
+
+        function searchPerformer() {
+            let input = document.getElementById('performer').value;
+        
+            if (input.trim() === '') {
+                document.getElementById('performerList').innerHTML = '';
+                return; // Clear the output list
+            }
+        
+            input = input.toLowerCase();
+            let filteredOrgs = orgList.filter(org => org.toLowerCase().includes(input));
+        
+            let orgListDiv = document.getElementById('performerList');
+            orgListDiv.innerHTML = ''; // Clear previous results
+        
+            filteredOrgs.forEach(org => {
+                let div = document.createElement('div');
+                div.textContent = org;
+                div.addEventListener('click', function() {
+                    document.getElementById('performer').value = org; // Set the input value
+                    document.getElementById('performerList').innerHTML = ''; // Clear the list after selection
+                });
+                orgListDiv.appendChild(div);
+            });
+        }
+        
+
         async function search(event){
             event.preventDefault();
 

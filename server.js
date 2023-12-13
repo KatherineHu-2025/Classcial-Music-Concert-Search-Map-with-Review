@@ -46,10 +46,10 @@ app.get('/search', (req, res) => {
         conditions.push("b.title = '" + piece + "'");
     }
     if (location) {
-        conditions.push("c.location_name = '" + location + "'");
+        conditions.push("c.name = '" + location + "'");
     }
     if (performer) {
-        conditions.push("d.performer_name = '" + performer + "'");
+        conditions.push("a.org = '" + performer + "'");
     }
 
     let baseQuery = `SELECT DISTINCT a.concert_id, a.title, d.date_time FROM Concert AS a, Piece AS b, Venue AS c, Performance as d, Performance_piece as e 
@@ -71,6 +71,44 @@ app.get('/search', (req, res) => {
     });
 });
 
+app.get('/composerdata', (req, res) => {
+    db.query('SELECT DISTINCT composer FROM Piece', (err, results) => {
+        if (err) {
+            res.status(500).send('Internal Server Error');
+        } else {
+            res.json(results);
+        }
+    });
+});
 
+app.get('/piecedata', (req, res) => {
+    db.query('SELECT DISTINCT title FROM Piece;', (err, results) => {
+        if (err) {
+            res.status(500).send('Internal Server Error');
+        } else {
+            res.json(results);
+        }
+    });
+});
+
+app.get('/venuedata', (req, res) => {
+    db.query('SELECT DISTINCT name FROM Venue;', (err, results) => {
+        if (err) {
+            res.status(500).send('Internal Server Error');
+        } else {
+            res.json(results);
+        }
+    });
+});
+
+app.get('/orgdata', (req, res) => {
+    db.query('SELECT DISTINCT org FROM Concert;', (err, results) => {
+        if (err) {
+            res.status(500).send('Internal Server Error');
+        } else {
+            res.json(results);
+        }
+    });
+});
 
 
