@@ -47,7 +47,8 @@ CREATE TABLE Performance(
 	perform_id	INT,
 	concert_id  INT,
 	venue_id	INT,
-	date_time	TIMESTAMP,
+	date_time	datetime,
+	pretty_datetime VARCHAR(100),
 	PRIMARY KEY (perform_id),
 	FOREIGN KEY (concert_id) REFERENCES Concert(concert_id) ON DELETE CASCADE,
 	FOREIGN KEY (venue_id) REFERENCES Venue(venue_id) ON DELETE SET NULL

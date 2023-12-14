@@ -7,7 +7,7 @@ const port = 3000;
 
 // Set up the database connection
 const db = mysql.createConnection({
-    host: 'localhost',
+    host: '127.0.0.1',
     user: 'root',
     password: '12345678',
     database: 'Classical'
@@ -52,7 +52,7 @@ app.get('/search', (req, res) => {
         conditions.push("a.org = '" + performer + "'");
     }
 
-    let baseQuery = `SELECT DISTINCT a.concert_id, a.title, d.date_time FROM Concert AS a, Piece AS b, Venue AS c, Performance as d, Performance_piece as e 
+    let baseQuery = `SELECT DISTINCT a.concert_id, a.title, d.pretty_datetime FROM Concert AS a, Piece AS b, Venue AS c, Performance as d, Performance_piece as e 
     WHERE a.concert_id=d.concert_id 
     AND a.concert_id=e.concert_id 
     AND b.piece_id=e.piece_id 

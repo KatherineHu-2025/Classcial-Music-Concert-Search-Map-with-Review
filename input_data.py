@@ -1,5 +1,8 @@
 import pandas as pd
 import mysql.connector
+from datetime import datetime
+import pytz
+from timezonefinder import TimezoneFinder
 
 
 def insertPiece(cursor,composer, title):
@@ -70,15 +73,16 @@ def insertComment(cursor,content,rate):
     except mysql.connector.Error as error_descriptor:
         print(f"Failed inserting comment: {error_descriptor}")
 
-def insertPerformance(cursor,perform_id,concert_id, venue_id,date_time):
+def insertPerformance(cursor,perform_id,concert_id, venue_id,date_time,pretty_datetime):
     try:
-        query = """INSERT INTO Performance (perform_id,concert_id, venue_id,date_time)
-                   VALUES (%s, %s, %s, %s)"""
+        query = """INSERT INTO Performance (perform_id,concert_id, venue_id,date_time, pretty_datetime)
+                   VALUES (%s, %s, %s, %s, %s)"""
         values = (
             perform_id if pd.notna(perform_id) else None,
             concert_id if pd.notna(concert_id) else None,
             venue_id if pd.notna(venue_id) else None,
-            date_time if pd.notna(date_time) else None
+            date_time if pd.notna(date_time) else None,
+            pretty_datetime if pd.notna(pretty_datetime) else None
         )
         cursor.execute(query, values)
     
@@ -109,6 +113,18 @@ def insertPerformance_post(cursor,perform_id, comment_id):
     except mysql.connector.Error as error_descriptor:
         print(f"Failed inserting comment: {error_descriptor}")
 
+def convert_to_local_time(iso_timestamp, timezone_str):
+    # Parse the ISO timestamp
+    utc_time = datetime.fromisoformat(iso_timestamp)
+
+    # Convert to the specified time zone
+    local_timezone = pytz.timezone(timezone_str)
+    local_time = utc_time.astimezone(local_timezone)
+
+    # Format the time in 'YYYY-MM-DD HH:MM:SS'
+    formatted_local_time = local_time.strftime('%Y-%m-%d %H:%M:%S')
+    pretty_date_time = local_time.strftime('%A,%B %d, %Y %I:%M %p')
+    return formatted_local_time,pretty_date_time
 
 def main():
     # Main program
@@ -156,15 +172,16 @@ def main():
         
         if (row['concert_id'] not in performance):
             if(last_row_valid):
-                datetime = row['date_time'][:19].replace('T',' ')
-                insertPerformance(cursor,row['concert_id'],concert_id,row['venue_id'],datetime)
+                datetime, pretty_datetime = convert_to_local_time(row['date_time'],row['venue_timezone'])
+                insertPerformance(cursor,row['concert_id'],concert_id,row['venue_id'],datetime,pretty_datetime)
                 performance.add(row['concert_id'])
                 last_row_valid = False
             #There are cases when concert has been added to set so that last_row_valid is False
             else:
                 if (row['title'] in concert):
+                    datetime, pretty_datetime = convert_to_local_time(row['date_time'],row['venue_timezone'])
                     concert_id = concert_dic[row['title']]
-                    insertPerformance(cursor,row['concert_id'],concert_id,row['venue_id'],datetime)
+                    insertPerformance(cursor,row['concert_id'],concert_id,row['venue_id'],datetime,pretty_datetime)
                     performance.add(row['concert_id'])
 
             
