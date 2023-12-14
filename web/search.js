@@ -177,10 +177,17 @@ let propertylist = [];
 let properties = [];
 let index = 0;
 async function find_post(kpm) {
-    const concert_id = propertylist[kpm][0];
-    const title = propertylist[kpm][1];
-    const organization = propertylist[kpm][2];
-    const details = propertylist[kpm][3];
+    let concert_id;
+    let title;
+    let organization;
+    let details;
+    for(let i=0;i<properties.length;i++){
+        if(properties[i]=="concert_id")concert_id=propertylist[kpm][i];
+        if(properties[i]=="title")title=propertylist[kpm][i];
+        if(properties[i]=="organization")organization=propertylist[kpm][i];
+        if(properties[i]=="details")details=propertylist[kpm][i];
+    }
+    
     const params2 = new URLSearchParams({ concert_id, title, organization, details });
     try {
         const response = await fetch(`http://localhost:3000/search_post?${params2.toString()}`);
@@ -245,7 +252,7 @@ async function add_comment(kpm) {
 
     document.getElementById(emptyrow).innerHTML = "";
 }
-async function show_detail(kpm) {
+async function show_con(kpm) {
     const emptyrow = "comment" + kpm;
 
     const tbody = document.createElement('form');
@@ -273,17 +280,36 @@ async function show_detail(kpm) {
     tbody.appendChild(dataRow);
     document.getElementById(emptyrow).innerHTML = "";
     document.getElementById(emptyrow).appendChild(tbody);
+}
+async function show_detail(kpm) {
+    
     var win = window.open("");
-    for (let i = 0; i < properties.length; i++) {
+    for (let i = 1; i < properties.length; i++) {
+        if(properties[i]=="details")continue;
+        if(properties[i]=="title"){
+            win.document.writeln("<h1>" + propertylist[kpm][i] + "</h1>");
+            continue;
+        }
+        if(properties[i]=="organization"){
+            win.document.writeln("<p>"+propertylist[kpm][i] + "</p>");
+            win.document.writeln("<hr />");
+            continue;
+        }
         win.document.writeln("<p>" + properties[i] + ": " + propertylist[kpm][i] + "</p>");
     }
-    win.document.writeln("<p></p>");
-    win.document.writeln("<p>" + "pieces:" + "</p>");
-    const concert_id = propertylist[kpm][0];
-    const title = propertylist[kpm][1];
-    const organization = propertylist[kpm][2];
-    const details = propertylist[kpm][3];
-    const params2 = new URLSearchParams({ concert_id, title, organization, details });
+    win.document.writeln("<hr />");
+    win.document.writeln("<p><b>" + "Program:" + "</b></p>");
+    let concert_id;
+    let title;
+    let organization;
+    let details;
+    for(let i=0;i<properties.length;i++){
+        if(properties[i]=="concert_id")concert_id=propertylist[kpm][i];
+        if(properties[i]=="title")title=propertylist[kpm][i];
+        if(properties[i]=="organization")organization=propertylist[kpm][i];
+        if(properties[i]=="details")details=propertylist[kpm][i];
+    }
+    let params2 = new URLSearchParams({ concert_id, title, organization, details });
     try {
         const response = await fetch(`http://localhost:3000/search_piece?${params2.toString()}`);
         if (!response.ok) {
@@ -291,13 +317,16 @@ async function show_detail(kpm) {
         }
         const data = await response.json();
 
-        if (data.length > 1) {
+        if (data.length > 0) {
 
             data.forEach(piece => {
-
+                let newline="<p>  ";
                 for (const key in piece) {
-                    win.document.writeln("<p>  " + key + ": " + piece[key] + "</p>");
+                    if(key=="piece_id")continue;
+                    newline+=key + ": " + piece[key]+"    "
                 }
+                newline+="</p>";
+                win.document.writeln(newline);
             });
 
         }
@@ -308,8 +337,15 @@ async function show_detail(kpm) {
     catch (error) {
         console.error('Fetch error:', error);
     }
-    win.document.writeln("<p></p>");
-    win.document.writeln("<p>" + "comments:" + "</p>");
+    win.document.writeln("<hr />");
+    for(let i=0;i<properties.length;i++){
+        if(properties[i]=="concert_id")concert_id=propertylist[kpm][i];
+        if(properties[i]=="title")title=propertylist[kpm][i];
+        if(properties[i]=="organization")organization=propertylist[kpm][i];
+        if(properties[i]=="details")details=propertylist[kpm][i];
+    }
+    params2 = new URLSearchParams({ concert_id, title, organization, details });
+    win.document.writeln("<p><b>" + "comments:" + "</b></p>");
     try {
         const response = await fetch(`http://localhost:3000/search_comment?${params2.toString()}`);
         if (!response.ok) {
@@ -317,7 +353,7 @@ async function show_detail(kpm) {
         }
         const data = await response.json();
 
-        if (data.length > 1) {
+        if (data.length > 0) {
 
             data.forEach(comment => {
 
@@ -330,9 +366,16 @@ async function show_detail(kpm) {
         else {
             win.document.writeln("<p>  " + "no comment found" + "</p>");
         }
+        win.document.writeln("<hr />");
     }
     catch (error) {
         console.error('Fetch error:', error);
+    }
+    for (let i = 1; i < properties.length; i++) {
+        if(properties[i]=="details"){
+            win.document.writeln("<p><b>" + properties[i]+":</b></p>");
+            win.document.writeln("<p>"+propertylist[kpm][i]+"</p>");
+        }
     }
 
 }
@@ -389,9 +432,12 @@ async function search(event) {
                     dataRow.appendChild(td);
 
                 }
+                const conbutton=document.createElement('tk');
+                conbutton.innerHTML='<button onclick=show_con(' + index + ')> Comment </button>';
                 const testRow = document.createElement('tk');
                 testRow.innerHTML = '<button onclick=show_detail(' + index + ')> Details </button>';
                 dataRow.appendChild(testRow);
+                dataRow.appendChild(conbutton);
                 tbody.appendChild(dataRow);
                 const emptyrow = "comment" + index;
                 const commentrow = document.createElement('div');
