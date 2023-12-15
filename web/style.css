@@ -89,3 +89,120 @@ td {
     transition: background-color 0.3s; 
     z-index: 1200;
 }
+
+.details-button {
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+    padding: 10px 15px; /* Padding around the text */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    margin-right: 10px; /* Margin to the right */
+}
+
+/* Styles for the 'Comment' button */
+.comment-button {
+    background-color: #008CBA; /* Blue background */
+    color: white; /* White text */
+    padding: 10px 15px; /* Padding around the text */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+/* Hover effect for both buttons */
+.details-button:hover, .comment-button:hover {
+    background-color: #666; /* Darker background on hover */
+}
+
+.commentForm {
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    padding: 15px;
+    display: none; /* Initially hidden */
+}
+
+/* Style for input fields */
+.commentForm input[type="text"],
+.commentForm input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+/* Style for labels */
+.commentForm label {
+    margin-right: 10px;
+}
+
+/* Style for the submit button */
+.commentForm button {
+    background-color: #008CBA;
+    color: rgb(255, 255, 255);
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+.commentForm button:hover {
+    opacity: 0.8;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+}
+
+/* Concert Details */
+h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 20px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+p {
+    margin-bottom: 10px;
+}
+
+/* Program Section */
+.composer {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.ptitle {
+    margin-left: 20px;
+}
+
+/* Detail Section */
+.detail {
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-left: 3px solid #007bff;
+}
+
+/* Comments Section */
+.rate {
+    font-weight: bold;
+    color: #28a745;
+}
+
+.comment {
+    margin-left: 20px;
+    font-style: italic;
+}

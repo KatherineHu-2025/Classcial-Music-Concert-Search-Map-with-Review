@@ -1,4 +1,8 @@
 
+/*******************************************************  
+Section: Load distinct composers, pieces, venues, performers
+*********************************************************/
+
 //This section of code fetch the whole distinct composer list from the database and store them into a list.
 let composerList = [];
 fetch('http://localhost:3000/composerdata')
@@ -71,7 +75,12 @@ fetch('http://localhost:3000/orgdata')
         console.error('Error fetching data:', error);
     });
 
-//This function filters the composers depending on user's input and fill the box by clicking
+/*******************************************************  
+Section: Filter list depending on user input and allow
+user to select based on filtered option
+*********************************************************/
+
+/** This function filters the composers depending on user's input and fill the box by clicking. */
 function searchComposer() {
     let input = document.getElementById('composer').value;
 
@@ -97,6 +106,7 @@ function searchComposer() {
     });
 }
 
+/** This function filters the pieces depending on user's input and fill the box by clicking. */
 function searchPiece() {
     let input = document.getElementById('piece').value;
 
@@ -122,6 +132,7 @@ function searchPiece() {
     });
 }
 
+/** This function filters the venues depending on user's input and fill the box by clicking. */
 function searchVenue() {
     let input = document.getElementById('location').value;
 
@@ -147,6 +158,7 @@ function searchVenue() {
     });
 }
 
+/** This function filters the performers depending on user's input and fill the box by clicking. */
 function searchPerformer() {
     let input = document.getElementById('performer').value;
 
@@ -197,9 +209,7 @@ async function find_post(kpm) {
         const data = await response.json();
 
         if (data.length > 0) {
-
             data.forEach(post => {
-
                 for (const key in post) {
                     return post[key];
                 }
@@ -211,6 +221,7 @@ async function find_post(kpm) {
         console.error('Fetch error:', error);
     }
 }
+
 async function add_comment(kpm) {
     const emptyrow = "comment" + kpm;
     const comment = document.getElementById(kpm + "comment").value;

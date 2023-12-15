@@ -22,40 +22,18 @@ db.connect((err) => {
 
 // Serve static files from the "web" directory
 app.use(express.static('web'));
+app.use(express.json());
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
 
-app.get('/search_comment', (req, res) => {
-	let {concert_id, title, organization, details} = req.query;
-	let conditions = [];
-	if (concert_id) {
-		conditions.push("a.concert_id = "+concert_id);
-	}
-	if(title) {
-        conditions.push("a.title = '" + title + "'");
-    }
-	if(organization) {
-        conditions.push("a.org = '" + organization + "'");
-    }
-	if(details) {
-        conditions.push("a.details = '" + details + "'");
-    }
-	let baseQuery = `SELECT DISTINCT f.comment_id, f.content as comment_content, f.rate
-	FROM Concert AS a, Piece AS b, Venue AS c, Performance as d, Performance_piece as e , Comment as f, Performance_post as g
-    WHERE a.concert_id=d.concert_id 
-    AND a.concert_id=e.concert_id 
-    AND b.piece_id=e.piece_id 
-	AND f.comment_id=g.comment_id
-	AND g.perform_id=d.perform_id
-    AND d.venue_id=c.venue_id`;
+app.get('/search_comment/:perform_id', (req, res) => {
+	const perform_id = req.params.perform_id;
+	let baseQuery = `SELECT b.content, b.rate FROM Performance_post as a JOIN Comment as b ON a.comment_id = b.comment_id
+    WHERE perform_id = ?`;
 	
-	if (conditions.length > 1) {
-        baseQuery += " AND " + conditions.join(" AND ");
-    }
-
-    db.query(baseQuery, (error, results) => {
+    db.query(baseQuery,[perform_id],(error, results) => {
         if (error) {
             res.status(500).send('Internal Server Error');
             return;
@@ -63,13 +41,43 @@ app.get('/search_comment', (req, res) => {
         res.json(results);
     });
 });
-app.get('/find_incre', (req, res) => {
-	let baseQuery = `SELECT 'AUTO_INCREMENT'
-	FROM  INFORMATION_SCHEMA.TABLES
-	WHERE TABLE_SCHEMA = 'Classical'
-	AND   TABLE_NAME   = 'Comment';`;
 
-    db.query(baseQuery, (error, results) => {
+app.post('/insert_comment', (req, res) => {
+    let {content, rate, perform_id} = req.body;
+    console.log(content);
+    // Insert into Comment table
+    let commentQuery = `INSERT INTO Comment (content, rate) VALUES (?, ?);`;
+    db.query(commentQuery, [content, rate], (error, commentResults) => {
+        if (error) {
+            res.status(500).send('Error inserting comment');
+            console.error(error);
+            return;
+        }
+
+        // Get the last inserted ID
+        let lastId = commentResults.insertId;
+
+        // Insert into Performance_post table
+        let performancePostQuery = `INSERT INTO Performance_post (perform_id, comment_id) VALUES (?, ?);`;
+        db.query(performancePostQuery, [perform_id, lastId], (error, performancePostResults) => {
+            if (error) {
+                res.status(500).send('Error linking comment to performance');
+                console.error(error);
+                return;
+            }
+
+            res.json(performancePostResults);
+        });
+    });
+});
+
+app.get('/search_piece/:concert_id', (req, res) => {
+    const concert_id = req.params.concert_id;
+    console.log(concert_id)
+	let baseQuery = `SELECT concert_id, b.composer, b.title FROM Performance_piece as a JOIN Piece as b ON a.piece_id = b.piece_id
+    WHERE concert_id = ?`;
+
+    db.query(baseQuery, [concert_id],(error, results) => {
         if (error) {
             res.status(500).send('Internal Server Error');
             return;
@@ -77,106 +85,8 @@ app.get('/find_incre', (req, res) => {
         res.json(results);
     });
 });
-app.get('/insert_comment', (req, res) => {
-	let {content,rate,post_id,incre_id} = req.query;
-	
-	let baseQuery = `INSERT INTO Performance_post (perform_id,comment_id) VALUES(`;
-	baseQuesry+=post_id+","+incre_id+");";
-	
-
-    db.query(baseQuery, (error, results) => {
-        if (error) {
-            res.status(500).send('Internal Server Error');
-            return;
-        }
-        res.json(results);
-    });
-	baseQuery = `INSERT INTO Comment (content,rate) VALUES(`;
-	if(content)baseQuery+="'"+content+"',";
-	else baseQuery+="NULL,";
-	if(rate)baseQuery+=rate;
-	else baseQuery+="NULL";
-	baseQuery+=");"
-	db.query(baseQuery, (error, results) => {
-        if (error) {
-            res.status(500).send('Internal Server Error');
-            return;
-        }
-        res.json(results);
-    });
-});
-app.get('/search_post', (req, res) => {
-	let {concert_id, title, organization, details} = req.query;
-	let conditions = [];
-	if (concert_id) {
-		conditions.push("a.concert_id = "+concert_id);
-	}
-	if(title) {
-        conditions.push("a.title = '" + title + "'");
-    }
-	if(organization) {
-        conditions.push("a.org = '" + organization + "'");
-    }
-	if(details) {
-        conditions.push("a.details = '" + details + "'");
-    }
-	let baseQuery = `SELECT DISTINCT d.perform_id 
-	FROM Concert AS a, Piece AS b, Venue AS c, Performance as d, Performance_piece as e 
-    WHERE a.concert_id=d.concert_id 
-    AND a.concert_id=e.concert_id 
-    AND b.piece_id=e.piece_id 
-    AND d.venue_id=c.venue_id`;
-	
-	if (conditions.length > 1) {
-        baseQuery += " AND " + conditions.join(" AND ");
-    }
-
-    db.query(baseQuery, (error, results) => {
-        if (error) {
-            res.status(500).send('Internal Server Error');
-            return;
-        }
-        res.json(results);
-    });
-});
-app.get('/search_piece', (req, res) => {
-	let {concert_id, title, organization, time} = req.query;
-	let conditions = [];
-	if (concert_id) {
-		conditions.push("a.concert_id = "+concert_id);
-	}
-	if(title) {
-        conditions.push("a.title = '" + title + "'");
-    }
-	if(organization) {
-        conditions.push("a.org = '" + organization + "'");
-    }
-	if(time) {
-        conditions.push("a.details = '" + time + "'");
-    }
-	let baseQuery = `SELECT DISTINCT b.piece_id, b.composer, b.title as piece_title
-	FROM Concert AS a, Piece AS b, Venue AS c, Performance as d, Performance_piece as e 
-    WHERE a.concert_id=d.concert_id 
-    AND a.concert_id=e.concert_id 
-    AND b.piece_id=e.piece_id 
-    AND d.venue_id=c.venue_id`;
-	
-	if (conditions.length > 1) {
-        baseQuery += " AND " + conditions.join(" AND ");
-    }
-
-    db.query(baseQuery, (error, results) => {
-        if (error) {
-            res.status(500).send('Internal Server Error');
-            return;
-        }
-        res.json(results);
-    });
-});
-// Endpoint to get performance by start/end date, location, performer
 
 // Endpoint to get performance by start/end date, location, performer
-
 app.get('/search', (req, res) => {
     let { startDate, endDate, composer, piece, location, performer } = req.query;
     let conditions = [];
@@ -200,7 +110,7 @@ app.get('/search', (req, res) => {
         conditions.push("a.org = '" + performer + "'");
     }
 
-    let baseQuery = `SELECT DISTINCT a.concert_id, a.title, a.org as organization, a.details, a.url, d.date_time as time, c.name as venue_name, c.address, c.lattitude, c.longtitude, c.time_zone
+    let baseQuery = `SELECT DISTINCT d.perform_id, a.concert_id, a.title, a.org as organization, a.details, a.url, d.pretty_datetime as time, c.name as venue_name, c.address, c.lattitude, c.longtitude, c.time_zone
 	FROM Concert AS a, Piece AS b, Venue AS c, Performance as d, Performance_piece as e 
     WHERE a.concert_id=d.concert_id 
     AND a.concert_id=e.concert_id 
