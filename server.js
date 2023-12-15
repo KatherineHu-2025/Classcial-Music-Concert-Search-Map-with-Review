@@ -82,7 +82,7 @@ app.get('/insert_comment', (req, res) => {
 	let {content,rate,post_id,incre_id} = req.query;
 	
 	let baseQuery = `INSERT INTO Performance_post (perform_id,comment_id) VALUES(`;
-	baseQuesry+=post_id+","+incre_id+");";
+	baseQuery+=post_id+","+incre_id+");";
 	
 
     db.query(baseQuery, (error, results) => {
