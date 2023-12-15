@@ -13,6 +13,7 @@ const db = mysql.createConnection({
     database: 'Classical'
 });
 
+
 db.connect((err) => {
     if (err) {
         throw err;
@@ -36,6 +37,21 @@ app.get('/search_comment/:perform_id', (req, res) => {
     db.query(baseQuery,[perform_id],(error, results) => {
         if (error) {
             res.status(500).send('Internal Server Error');
+            return;
+        }
+        res.json(results);
+    });
+});
+
+app.post('/insert_comment', (req, res) => {
+    let {content, rate, perform_id} = req.body;
+    console.log(content);
+    // Insert into Comment table
+    let commentQuery = `INSERT INTO Comment (content, rate) VALUES (?, ?);`;
+    db.query(commentQuery, [content, rate], (error, commentResults) => {
+        if (error) {
+            res.status(500).send('Error inserting comment');
+            console.error(error);
             return;
         }
         res.json(results);
