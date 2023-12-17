@@ -112,7 +112,7 @@ app.get('/search', (req, res) => {
         conditions.push("a.org = '" + performer + "'");
     }
 
-    let baseQuery = `SELECT DISTINCT d.perform_id, a.concert_id, a.title, a.org as organization, a.details, a.url, d.pretty_datetime as time, c.name as venue_name, c.address, c.lattitude, c.longtitude, c.time_zone
+    let baseQuery = `SELECT DISTINCT d.perform_id, a.concert_id, a.title, a.org as organization, a.details, a.url, d.pretty_datetime as time, c.name as venue_name, c.address, c.lattitude, c.longtitude, c.time_zone, d.date_time
 	FROM Concert AS a, Piece AS b, Venue AS c, Performance as d, Performance_piece as e 
     WHERE a.concert_id=d.concert_id 
     AND a.concert_id=e.concert_id 
@@ -122,6 +122,8 @@ app.get('/search', (req, res) => {
     if (conditions.length > 0) {
         baseQuery += " AND " + conditions.join(" AND ");
     }
+
+    baseQuery += "ORDER BY d.date_time"
 
     db.query(baseQuery, (error, results) => {
         if (error) {
